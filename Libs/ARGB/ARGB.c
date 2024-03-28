@@ -110,16 +110,11 @@ extern DMA_HandleTypeDef (DMA_HANDLE);  ///< DMA handler
 volatile u8_t PWM_HI;    ///< PWM Code HI Log.1 period
 volatile u8_t PWM_LO;    ///< PWM Code LO Log.1 period
 
-#ifdef SK6812
-#define NUM_BYTES (4 * NUM_PIXELS) ///< Strip size in bytes
-#define PWM_BUF_LEN (4 * 8 * 2)    ///< Pack len * 8 bit * 2 LEDs
-#else
-#define NUM_BYTES (3 * NUM_PIXELS) ///< Strip size in bytes
-#define PWM_BUF_LEN (3 * 8 * 2)    ///< Pack len * 8 bit * 2 LEDs
-#endif
+#define NUM_BYTES (sizeof(ARGB_PIXEL) * NUM_PIXELS) ///< Strip size in bytes
+#define PWM_BUF_LEN (sizeof(ARGB_PIXEL) * 8 * 2) ///< Pack len * 8 bit * 2 LEDs
 
 /// Static LED buffer
-volatile u8_t RGB_BUF[NUM_BYTES] = {0,};
+volatile ARGB_PIXEL RGB_BUF[NUM_PIXELS] = {0,};
 
 /// Timer PWM value buffer
 volatile dma_siz PWM_BUF[PWM_BUF_LEN] = {0,};
@@ -237,16 +232,11 @@ void ARGB_SetRGB(u16_t i, u8_t r, u8_t g, u8_t b) {
     const u8_t subp2 = r;
     const u8_t subp3 = b;
 #endif
-    // RGB or RGBW
-#ifdef SK6812
-    RGB_BUF[4 * i] = subp1;     // subpixel 1
-    RGB_BUF[4 * i + 1] = subp2; // subpixel 2
-    RGB_BUF[4 * i + 2] = subp3; // subpixel 3
-#else
-    RGB_BUF[3 * i] = subp1;     // subpixel 1
-    RGB_BUF[3 * i + 1] = subp2; // subpixel 2
-    RGB_BUF[3 * i + 2] = subp3; // subpixel 3
-#endif
+// RGB
+RGB_BUF[i].r = subp1; // subpixel 1
+RGB_BUF[i].g = subp2; // subpixel 2
+RGB_BUF[i].b = subp3; // subpixel 3
+
 }
 
 /**
@@ -268,11 +258,10 @@ void ARGB_SetHSV(u16_t i, u8_t hue, u8_t sat, u8_t val) {
  * @param[in] w White component [0..255]
  */
 void ARGB_SetWhite(u16_t i, u8_t w) {
-#ifdef RGB
-    return;
-#endif
+#ifdef SK6812
     w /= 256 / ((u16_t) ARGB_BR + 1); // set brightness
-    RGB_BUF[4 * i + 3] = w;                // set white part
+    RGB_BUF[i].w = w;                // set white part
+#endif
 }
 
 /**

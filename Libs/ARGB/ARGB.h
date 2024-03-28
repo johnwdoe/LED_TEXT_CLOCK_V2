@@ -33,7 +33,7 @@
 // SK6812  — RGBW, 800kHz
 // WS2815  — GRB, 800kHz
 
-#define NUM_PIXELS 13*9 ///< Pixel quantity
+#define NUM_PIXELS 13 * 9 ///< Pixel quantity
 
 #define USE_GAMMA_CORRECTION 1 ///< Gamma-correction should fix red&green, try for yourself
 
@@ -52,12 +52,21 @@
  * @enum ARGB_STATE
  * @brief Driver's status enum
  */
-typedef enum ARGB_STATE {
+typedef enum {
     ARGB_BUSY = 0,  ///< DMA Transfer in progress
     ARGB_READY = 1, ///< DMA Ready to transfer
     ARGB_OK = 2,    ///< Function execution success
     ARGB_PARAM_ERR = 3, ///< Error in input parameters
 } ARGB_STATE;
+
+typedef struct {
+	u8_t r;
+	u8_t g;
+	u8_t b;
+#ifdef SK6812
+	u8_t w;
+#endif
+} ARGB_PIXEL;
 
 void ARGB_Init(void);   // Initialization
 void ARGB_Clear(void);  // Clear strip
